@@ -3,6 +3,7 @@ import { erc20Abi } from "viem";
 
 export async function handleLendingApr(poolContract: ethers.Contract, asset: string | null, provider, chain) {
     const reserves = await poolContract.getReservesList();
+    // console.log("Reserves", reserves);
     let bestApr = 0;
     let bestAsset = null;
     let bestSymbol = "";
@@ -22,9 +23,11 @@ export async function handleLendingApr(poolContract: ethers.Contract, asset: str
                 continue;
             }
         }
-        if (asset && asset.toLowerCase() !== symbol.toLowerCase()) continue;
+        // console.log("symbol", symbol);
+        // if (asset && asset.toLowerCase() !== symbol.toLowerCase()) continue;
 
         const reserveData = await poolContract.getReserveData(tokenAddress);
+        // console.log("reserve data", reserveData);
         const apr = Number(reserveData.currentLiquidityRate) / 1e27 * 100;
 
         if (apr > bestApr) {
@@ -34,9 +37,10 @@ export async function handleLendingApr(poolContract: ethers.Contract, asset: str
         }
     }
 
-    const responseMessage = asset
-        ? `Current APR for ${asset} on ${chain}: ${bestApr.toFixed(2)}%`
-        : `Best lending APR on ${chain} is ${bestApr.toFixed(2)}% for ${bestSymbol}`;
+    // const responseMessage = asset && bestSymbol
+    //     ? `Current APR for ${asset} on ${chain}: ${bestApr.toFixed(2)}%`
+    //     : `Best lending APR on ${chain} is ${bestApr.toFixed(2)}% for ${bestSymbol}`;
+    const responseMessage = `Best lending APR on ${chain} is ${bestApr.toFixed(2)}% for ${bestSymbol}`;
 
     // console.log("best asset", bestAsset);
     // console.log("best apr", bestApr);

@@ -13,6 +13,7 @@
     "dependencies": {
         "@elizaos/core": "workspace:*",
         "@elizaos/plugin-eigenda": "workspace:*",
+        "@jbrower95/eigenblob": "workspace:*",
         "dotenv": "^16.4.5"
     },
     "devDependencies": {

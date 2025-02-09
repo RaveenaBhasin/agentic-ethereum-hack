@@ -9,6 +9,7 @@ import {
 } from "@elizaos/core";
 import { verifyProof } from "./utils/api";
 import { EigenDAClient } from "@elizaos/plugin-eigenda";
+import { EigenDA} from "@jbrower95/eigenblob";
 
 interface OpacityOptions {
     modelProvider?: ModelProviderName;
@@ -23,11 +24,12 @@ interface OpacityOptions {
     eigenDACreditsContractAddress?: string;
 }
 
+
 export class OpacityAdapter implements IVerifiableInferenceAdapter {
     public options: OpacityOptions;
     private eigenDAClient: InstanceType<typeof EigenDAClient>;
     private eigenDAIdentifier: Uint8Array;
-
+    
     constructor(options: OpacityOptions) {
         this.options = options;
 
@@ -61,6 +63,16 @@ export class OpacityAdapter implements IVerifiableInferenceAdapter {
                 await this.eigenDAClient.topupCredits(this.eigenDAIdentifier, 0.01);
             }
         }
+    }
+
+    async createEigenDAClient() {
+        const TEST_URI = "https://disperser-holesky-web.eigenda.xyz:443";
+        const client = new EigenDA({uri: TEST_URI});
+        const putRequest = client.put({hello: 'world'});
+        const blob = await putRequest.wait(10_000 /* max deadline in MS */);
+        console.log("Blob", blob);
+        const receivedBlob = await client.get(putRequest);
+        console.log("Get blob", receivedBlob);
     }
 
     //Support anthropic
@@ -323,32 +335,39 @@ export class OpacityAdapter implements IVerifiableInferenceAdapter {
         }
         const proof = await response.json();
 
+        // this.createEigenDAClient();
+
         // Store proof in EigenDA if client is initialized
-        if (this.eigenDAClient) {
-            try {
-                await this.initializeEigenDA();
+        // if (this.eigenDAClient) {
+        //     try {
+        //         await this.initializeEigenDA();
+        //         elizaLogger.info("Eigen DA Initialized");
 
-                // Store proof with metadata
-                const proofData = JSON.stringify({
-                    proof,
-                    logId,
-                    timestamp: Date.now()
-                });
+        //         // Store proof with metadata
+        //         const proofData = JSON.stringify({
+        //             proof,
+        //             logId,
+        //             timestamp: Date.now()
+        //         });
+        //         elizaLogger.info("Proof data");
+        //         elizaLogger.info(proofData);
+        //         elizaLogger.info("eigen da identifier", this.eigenDAIdentifier);
 
-                const uploadResult = await this.eigenDAClient.upload(proofData, this.eigenDAIdentifier);
-                elizaLogger.debug("Proof stored in EigenDA with job ID:", uploadResult.job_id);
+        //         const uploadResult = await this.eigenDAClient.upload(proofData, this.eigenDAIdentifier);
+        //         elizaLogger.info("upload result to eigen da", uploadResult);
+        //         elizaLogger.debug("Proof stored in EigenDA with job ID:", uploadResult.job_id);
 
-                // Return proof with EigenDA reference
-                return {
-                    ...proof,
-                    eigenDAJobId: uploadResult.job_id
-                };
-            } catch (error) {
-                elizaLogger.error("Failed to store proof in EigenDA:", error);
-                // Return original proof if EigenDA storage fails
-                return proof;
-            }
-        }
+        //         // Return proof with EigenDA reference
+        //         return {
+        //             ...proof,
+        //             eigenDAJobId: uploadResult.job_id
+        //         };
+        //     } catch (error) {
+        //         elizaLogger.error("Failed to store proof in EigenDA:", error);
+        //         // Return original proof if EigenDA storage fails
+        //         return proof;
+        //     }
+        // }
 
         return proof;
     }

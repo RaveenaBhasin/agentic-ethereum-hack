@@ -128,6 +128,7 @@ export class EigenDAClient {
       const hexString = Buffer.from(identifier).toString('hex');
       const formattedIdentifier = ethers.hexlify(ethers.zeroPadValue('0x' + hexString, 32));
       const balance = await this.creditsContract.getBalance(formattedIdentifier);
+      console.log("Balance", balance);
       return Number(ethers.formatEther(balance));
     } catch (error) {
       throw new Error(`Failed to get balance: ${error.message}`);
@@ -166,6 +167,7 @@ export class EigenDAClient {
         content: content,
         salt: salt
       };
+      console.log("Data to sign", dataToSign);
 
       // Sign the request
       const signature = await this.signRequest(dataToSign);
@@ -178,7 +180,9 @@ export class EigenDAClient {
         salt: salt,
         signature: signature
       };
-
+      console.log("Request Data", requestData);
+      console.log("Request data stringify", JSON.stringify(requestData));
+      
       // Make the request
       try {
         const response = await axios.post<UploadResponse>(`${this.apiUrl}/upload`, requestData);
