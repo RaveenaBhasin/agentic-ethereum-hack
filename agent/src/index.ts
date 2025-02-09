@@ -1,32 +1,31 @@
 import { PGLiteDatabaseAdapter } from "@elizaos/adapter-pglite";
 import { PostgresDatabaseAdapter } from "@elizaos/adapter-postgres";
-import { QdrantDatabaseAdapter } from "@elizaos/adapter-qdrant";
 import { RedisClient } from "@elizaos/adapter-redis";
 import { SqliteDatabaseAdapter } from "@elizaos/adapter-sqlite";
 import { SupabaseDatabaseAdapter } from "@elizaos/adapter-supabase";
 import { AutoClientInterface } from "@elizaos/client-auto";
 import { DiscordClientInterface } from "@elizaos/client-discord";
-import { InstagramClientInterface } from "@elizaos/client-instagram";
+// import { InstagramClientInterface } from "@elizaos/client-instagram";
 import { LensAgentClient } from "@elizaos/client-lens";
 import { SlackClientInterface } from "@elizaos/client-slack";
 import { TelegramClientInterface } from "@elizaos/client-telegram";
-import { TelegramAccountClientInterface } from "@elizaos/client-telegram-account";
+// import { TelegramAccountClientInterface } from "@elizaos/client-telegram-account";
 import { TwitterClientInterface } from "@elizaos/client-twitter";
-import { AlexaClientInterface } from "@elizaos/client-alexa";
-import { MongoDBDatabaseAdapter } from "@elizaos/adapter-mongodb";
-import { DevaClientInterface } from "@elizaos/client-deva";
+// import { AlexaClientInterface } from "@elizaos/client-alexa";
+// import { MongoDBDatabaseAdapter } from "@elizaos/adapter-mongodb";
+// import { DevaClientInterface } from "@elizaos/client-deva";
 
 import { FarcasterClientInterface } from "@elizaos/client-farcaster";
-import { OmniflixPlugin } from "@elizaos/plugin-omniflix";
-import { JeeterClientInterface } from "@elizaos/client-simsai";
-import { XmtpClientInterface } from "@elizaos/client-xmtp";
+// import { OmniflixPlugin } from "@elizaos/plugin-omniflix";
+// import { JeeterClientInterface } from "@elizaos/client-simsai";
+// import { XmtpClientInterface } from "@elizaos/client-xmtp";
 import { DirectClient } from "@elizaos/client-direct";
-import { agentKitPlugin } from "@elizaos/plugin-agentkit";
-import { gelatoPlugin } from "@elizaos/plugin-gelato";
+// import { agentKitPlugin } from "@elizaos/plugin-agentkit";
+// import { gelatoPlugin } from "@elizaos/plugin-gelato";
 import { PrimusAdapter } from "@elizaos/plugin-primus";
 import { lightningPlugin } from "@elizaos/plugin-lightning";
 import { elizaCodeinPlugin, onchainJson } from "@elizaos/plugin-iq6900";
-import { dcapPlugin } from "@elizaos/plugin-dcap";
+// import { dcapPlugin } from "@elizaos/plugin-dcap";
 import {
     AgentRuntime,
     CacheManager,
@@ -99,7 +98,7 @@ import { mindNetworkPlugin } from "@elizaos/plugin-mind-network";
 import { multiversxPlugin } from "@elizaos/plugin-multiversx";
 import { nearPlugin } from "@elizaos/plugin-near";
 import createNFTCollectionsPlugin from "@elizaos/plugin-nft-collections";
-import { nftGenerationPlugin } from "@elizaos/plugin-nft-generation";
+// import { nftGenerationPlugin } from "@elizaos/plugin-nft-generation";
 import { createNodePlugin } from "@elizaos/plugin-node";
 import { obsidianPlugin } from "@elizaos/plugin-obsidian";
 import { OpacityAdapter } from "@elizaos/plugin-opacity";
@@ -108,7 +107,7 @@ import { quaiPlugin } from "@elizaos/plugin-quai";
 import { sgxPlugin } from "@elizaos/plugin-sgx";
 import { solanaPlugin } from "@elizaos/plugin-solana";
 import { solanaPluginV2 } from "@elizaos/plugin-solana-v2";
-import { solanaAgentkitPlugin } from "@elizaos/plugin-solana-agent-kit";
+// import { solanaAgentkitPlugin } from "@elizaos/plugin-solana-agent-kit";
 import { squidRouterPlugin } from "@elizaos/plugin-squid-router";
 import { stargazePlugin } from "@elizaos/plugin-stargaze";
 import { storyPlugin } from "@elizaos/plugin-story";
@@ -160,6 +159,7 @@ import { quickIntelPlugin } from "@elizaos/plugin-quick-intel";
 
 import { trikonPlugin } from "@elizaos/plugin-trikon";
 import arbitragePlugin from "@elizaos/plugin-arbitrage";
+import { mainCharacter } from "./avatar";
 const __filename = fileURLToPath(import.meta.url); // get the resolved path to the file
 const __dirname = path.dirname(__filename); // get the name of the directory
 
@@ -243,8 +243,8 @@ function isAllStrings(arr: unknown[]): boolean {
 export async function loadCharacterFromOnchain(): Promise<Character[]> {
     const jsonText = onchainJson;
 
-    console.log("JSON:", jsonText);
-    if (!jsonText) return [];
+    // console.log("JSON:", jsonText);
+    // if (!jsonText) return [];
     const loadedCharacters = [];
     try {
         const character = JSON.parse(jsonText);
@@ -483,7 +483,7 @@ export async function loadCharacters(
 
     if (loadedCharacters.length === 0) {
         elizaLogger.info("No characters found, using default character");
-        loadedCharacters.push(defaultCharacter);
+        loadedCharacters.push(mainCharacter);
     }
 
     return loadedCharacters;
@@ -754,20 +754,6 @@ function initializeDatabase(dataDir: string) {
             dataDir: process.env.PGLITE_DATA_DIR,
         });
         return db;
-    } else if (
-        process.env.QDRANT_URL &&
-        process.env.QDRANT_KEY &&
-        process.env.QDRANT_PORT &&
-        process.env.QDRANT_VECTOR_SIZE
-    ) {
-        elizaLogger.info("Initializing Qdrant adapter...");
-        const db = new QdrantDatabaseAdapter(
-            process.env.QDRANT_URL,
-            process.env.QDRANT_KEY,
-            Number(process.env.QDRANT_PORT),
-            Number(process.env.QDRANT_VECTOR_SIZE)
-        );
-        return db;
     } else {
         const filePath =
             process.env.SQLITE_FILE ?? path.resolve(dataDir, "db.sqlite");
@@ -822,12 +808,12 @@ export async function initializeClients(
         if (telegramClient) clients.telegram = telegramClient;
     }
 
-    if (clientTypes.includes(Clients.TELEGRAM_ACCOUNT)) {
-        const telegramAccountClient =
-            await TelegramAccountClientInterface.start(runtime);
-        if (telegramAccountClient)
-            clients.telegram_account = telegramAccountClient;
-    }
+    // if (clientTypes.includes(Clients.TELEGRAM_ACCOUNT)) {
+    //     const telegramAccountClient =
+    //         await TelegramAccountClientInterface.start(runtime);
+    //     if (telegramAccountClient)
+    //         clients.telegram_account = telegramAccountClient;
+    // }
 
     if (clientTypes.includes(Clients.TWITTER)) {
         const twitterClient = await TwitterClientInterface.start(runtime);
@@ -836,19 +822,19 @@ export async function initializeClients(
         }
     }
 
-    if (clientTypes.includes(Clients.ALEXA)) {
-        const alexaClient = await AlexaClientInterface.start(runtime);
-        if (alexaClient) {
-            clients.alexa = alexaClient;
-        }
-    }
+    // if (clientTypes.includes(Clients.ALEXA)) {
+    //     const alexaClient = await AlexaClientInterface.start(runtime);
+    //     if (alexaClient) {
+    //         clients.alexa = alexaClient;
+    //     }
+    // }
 
-    if (clientTypes.includes(Clients.INSTAGRAM)) {
-        const instagramClient = await InstagramClientInterface.start(runtime);
-        if (instagramClient) {
-            clients.instagram = instagramClient;
-        }
-    }
+    // if (clientTypes.includes(Clients.INSTAGRAM)) {
+    //     const instagramClient = await InstagramClientInterface.start(runtime);
+    //     if (instagramClient) {
+    //         clients.instagram = instagramClient;
+    //     }
+    // }
 
     if (clientTypes.includes(Clients.FARCASTER)) {
         const farcasterClient = await FarcasterClientInterface.start(runtime);
@@ -863,19 +849,19 @@ export async function initializeClients(
         clients.lens = lensClient;
     }
 
-    if (clientTypes.includes(Clients.SIMSAI)) {
-        const simsaiClient = await JeeterClientInterface.start(runtime);
-        if (simsaiClient) clients.simsai = simsaiClient;
-    }
+    // if (clientTypes.includes(Clients.SIMSAI)) {
+    // const simsaiClient = await JeeterClientInterface.start(runtime);
+    // if (simsaiClient) clients.simsai = simsaiClient;
+    // }
 
     elizaLogger.log("client keys", Object.keys(clients));
 
-    if (clientTypes.includes("deva")) {
-        if (clientTypes.includes("deva")) {
-            const devaClient = await DevaClientInterface.start(runtime);
-            if (devaClient) clients.deva = devaClient;
-        }
-    }
+    // if (clientTypes.includes("deva")) {
+    //     if (clientTypes.includes("deva")) {
+    //         const devaClient = await DevaClientInterface.start(runtime);
+    //         if (devaClient) clients.deva = devaClient;
+    //     }
+    // }
 
     if (clientTypes.includes("slack")) {
         const slackClient = await SlackClientInterface.start(runtime);
@@ -1019,7 +1005,7 @@ export async function createAgent(
         // character.plugins are handled when clients are added
         plugins: [
             parseBooleanFromText(getSecret(character, "BITMIND")) &&
-            getSecret(character, "BITMIND_API_TOKEN")
+                getSecret(character, "BITMIND_API_TOKEN")
                 ? bittensorPlugin
                 : null,
             parseBooleanFromText(
@@ -1028,13 +1014,13 @@ export async function createAgent(
                 ? emailAutomationPlugin
                 : null,
             getSecret(character, "IQ_WALLET_ADDRESS") &&
-            getSecret(character, "IQSOlRPC")
+                getSecret(character, "IQSOlRPC")
                 ? elizaCodeinPlugin
                 : null,
             bootstrapPlugin,
             getSecret(character, "CDP_API_KEY_NAME") &&
-            getSecret(character, "CDP_API_KEY_PRIVATE_KEY") &&
-            getSecret(character, "CDP_AGENT_KIT_NETWORK")
+                getSecret(character, "CDP_API_KEY_PRIVATE_KEY") &&
+                getSecret(character, "CDP_AGENT_KIT_NETWORK")
                 ? agentKitPlugin
                 : null,
             getSecret(character, "DEXSCREENER_API_KEY")
@@ -1046,13 +1032,13 @@ export async function createAgent(
                 : null,
             nodePlugin,
             getSecret(character, "ROUTER_NITRO_EVM_PRIVATE_KEY") &&
-            getSecret(character, "ROUTER_NITRO_EVM_ADDRESS")
+                getSecret(character, "ROUTER_NITRO_EVM_ADDRESS")
                 ? nitroPlugin
                 : null,
             getSecret(character, "TAVILY_API_KEY") ? webSearchPlugin : null,
             getSecret(character, "SOLANA_PUBLIC_KEY") ||
-            (getSecret(character, "WALLET_PUBLIC_KEY") &&
-                !getSecret(character, "WALLET_PUBLIC_KEY")?.startsWith("0x"))
+                (getSecret(character, "WALLET_PUBLIC_KEY") &&
+                    !getSecret(character, "WALLET_PUBLIC_KEY")?.startsWith("0x"))
                 ? [solanaPlugin, solanaPluginV2]
                 : null,
             getSecret(character, "SOLANA_PRIVATE_KEY")
@@ -1061,12 +1047,12 @@ export async function createAgent(
             getSecret(character, "AUTONOME_JWT_TOKEN") ? autonomePlugin : null,
             (getSecret(character, "NEAR_ADDRESS") ||
                 getSecret(character, "NEAR_WALLET_PUBLIC_KEY")) &&
-            getSecret(character, "NEAR_WALLET_SECRET_KEY")
+                getSecret(character, "NEAR_WALLET_SECRET_KEY")
                 ? nearPlugin
                 : null,
             getSecret(character, "EVM_PUBLIC_KEY") ||
-            (getSecret(character, "WALLET_PUBLIC_KEY") &&
-                getSecret(character, "WALLET_PUBLIC_KEY")?.startsWith("0x"))
+                (getSecret(character, "WALLET_PUBLIC_KEY") &&
+                    getSecret(character, "WALLET_PUBLIC_KEY")?.startsWith("0x"))
                 ? evmPlugin
                 : null,
             (getSecret(character, "EVM_PRIVATE_KEY") ||
@@ -1075,20 +1061,20 @@ export async function createAgent(
                 : null,
             (getSecret(character, "EVM_PUBLIC_KEY") ||
                 getSecret(character, "INJECTIVE_PUBLIC_KEY")) &&
-            getSecret(character, "INJECTIVE_PRIVATE_KEY")
+                getSecret(character, "INJECTIVE_PRIVATE_KEY")
                 ? injectivePlugin
                 : null,
             getSecret(character, "COSMOS_RECOVERY_PHRASE") &&
-                getSecret(character, "COSMOS_AVAILABLE_CHAINS") &&
-                createCosmosPlugin(),
+            getSecret(character, "COSMOS_AVAILABLE_CHAINS") &&
+            createCosmosPlugin(),
             (getSecret(character, "SOLANA_PUBLIC_KEY") ||
                 (getSecret(character, "WALLET_PUBLIC_KEY") &&
                     !getSecret(character, "WALLET_PUBLIC_KEY")?.startsWith(
                         "0x"
                     ))) &&
-            getSecret(character, "SOLANA_ADMIN_PUBLIC_KEY") &&
-            getSecret(character, "SOLANA_PRIVATE_KEY") &&
-            getSecret(character, "SOLANA_ADMIN_PRIVATE_KEY")
+                getSecret(character, "SOLANA_ADMIN_PUBLIC_KEY") &&
+                getSecret(character, "SOLANA_PRIVATE_KEY") &&
+                getSecret(character, "SOLANA_ADMIN_PRIVATE_KEY")
                 ? nftGenerationPlugin
                 : null,
             getSecret(character, "ZEROG_PRIVATE_KEY") ? zgPlugin : null,
@@ -1100,49 +1086,49 @@ export async function createAgent(
                 ? coinbaseCommercePlugin
                 : null,
             getSecret(character, "FAL_API_KEY") ||
-            getSecret(character, "OPENAI_API_KEY") ||
-            getSecret(character, "VENICE_API_KEY") ||
-            getSecret(character, "NVIDIA_API_KEY") ||
-            getSecret(character, "NINETEEN_AI_API_KEY") ||
-            getSecret(character, "HEURIST_API_KEY") ||
-            getSecret(character, "LIVEPEER_GATEWAY_URL")
+                getSecret(character, "OPENAI_API_KEY") ||
+                getSecret(character, "VENICE_API_KEY") ||
+                getSecret(character, "NVIDIA_API_KEY") ||
+                getSecret(character, "NINETEEN_AI_API_KEY") ||
+                getSecret(character, "HEURIST_API_KEY") ||
+                getSecret(character, "LIVEPEER_GATEWAY_URL")
                 ? imageGenerationPlugin
                 : null,
             getSecret(character, "FAL_API_KEY") ? ThreeDGenerationPlugin : null,
             ...(getSecret(character, "COINBASE_API_KEY") &&
-            getSecret(character, "COINBASE_PRIVATE_KEY")
+                getSecret(character, "COINBASE_PRIVATE_KEY")
                 ? [
-                      coinbaseMassPaymentsPlugin,
-                      tradePlugin,
-                      tokenContractPlugin,
-                      advancedTradePlugin,
-                  ]
+                    coinbaseMassPaymentsPlugin,
+                    tradePlugin,
+                    tokenContractPlugin,
+                    advancedTradePlugin,
+                ]
                 : []),
             ...(teeMode !== TEEMode.OFF && walletSecretSalt ? [teePlugin] : []),
             teeMode !== TEEMode.OFF &&
-            walletSecretSalt &&
-            getSecret(character, "VLOG")
+                walletSecretSalt &&
+                getSecret(character, "VLOG")
                 ? verifiableLogPlugin
                 : null,
             getSecret(character, "SGX") ? sgxPlugin : null,
             getSecret(character, "ENABLE_TEE_LOG") &&
-            ((teeMode !== TEEMode.OFF && walletSecretSalt) ||
-                getSecret(character, "SGX"))
+                ((teeMode !== TEEMode.OFF && walletSecretSalt) ||
+                    getSecret(character, "SGX"))
                 ? teeLogPlugin
                 : null,
             getSecret(character, "OMNIFLIX_API_URL") &&
-            getSecret(character, "OMNIFLIX_MNEMONIC")
+                getSecret(character, "OMNIFLIX_MNEMONIC")
                 ? OmniflixPlugin
                 : null,
             getSecret(character, "COINBASE_API_KEY") &&
-            getSecret(character, "COINBASE_PRIVATE_KEY") &&
-            getSecret(character, "COINBASE_NOTIFICATION_URI")
+                getSecret(character, "COINBASE_PRIVATE_KEY") &&
+                getSecret(character, "COINBASE_NOTIFICATION_URI")
                 ? webhookPlugin
                 : null,
             goatPlugin,
             zilliqaPlugin,
             getSecret(character, "COINGECKO_API_KEY") ||
-            getSecret(character, "COINGECKO_PRO_API_KEY")
+                getSecret(character, "COINGECKO_PRO_API_KEY")
                 ? coingeckoPlugin
                 : null,
             getSecret(character, "MORALIS_API_KEY") ? moralisPlugin : null,
@@ -1152,15 +1138,15 @@ export async function createAgent(
                 : null,
             getSecret(character, "B2_PRIVATE_KEY") ? b2Plugin : null,
             getSecret(character, "BINANCE_API_KEY") &&
-            getSecret(character, "BINANCE_SECRET_KEY")
+                getSecret(character, "BINANCE_SECRET_KEY")
                 ? binancePlugin
                 : null,
             getSecret(character, "FLOW_ADDRESS") &&
-            getSecret(character, "FLOW_PRIVATE_KEY")
+                getSecret(character, "FLOW_PRIVATE_KEY")
                 ? flowPlugin
                 : null,
             getSecret(character, "LENS_ADDRESS") &&
-            getSecret(character, "LENS_PRIVATE_KEY")
+                getSecret(character, "LENS_PRIVATE_KEY")
                 ? lensPlugin
                 : null,
             getSecret(character, "APTOS_PRIVATE_KEY") ? aptosPlugin : null,
@@ -1178,10 +1164,10 @@ export async function createAgent(
             getSecret(character, "SUI_PRIVATE_KEY") ? suiPlugin : null,
             getSecret(character, "STORY_PRIVATE_KEY") ? storyPlugin : null,
             getSecret(character, "SQUID_SDK_URL") &&
-            getSecret(character, "SQUID_INTEGRATOR_ID") &&
-            getSecret(character, "SQUID_EVM_ADDRESS") &&
-            getSecret(character, "SQUID_EVM_PRIVATE_KEY") &&
-            getSecret(character, "SQUID_API_THROTTLE_INTERVAL")
+                getSecret(character, "SQUID_INTEGRATOR_ID") &&
+                getSecret(character, "SQUID_EVM_ADDRESS") &&
+                getSecret(character, "SQUID_EVM_PRIVATE_KEY") &&
+                getSecret(character, "SQUID_API_THROTTLE_INTERVAL")
                 ? squidRouterPlugin
                 : null,
             getSecret(character, "FUEL_PRIVATE_KEY") ? fuelPlugin : null,
@@ -1190,7 +1176,7 @@ export async function createAgent(
                 : null,
             getSecret(character, "BIRDEYE_API_KEY") ? birdeyePlugin : null,
             getSecret(character, "ECHOCHAMBERS_API_URL") &&
-            getSecret(character, "ECHOCHAMBERS_API_KEY")
+                getSecret(character, "ECHOCHAMBERS_API_KEY")
                 ? echoChambersPlugin
                 : null,
             getSecret(character, "LETZAI_API_KEY") ? letzAIPlugin : null,
@@ -1203,7 +1189,7 @@ export async function createAgent(
                 ? genLayerPlugin
                 : null,
             getSecret(character, "AVAIL_SEED") &&
-            getSecret(character, "AVAIL_APP_ID")
+                getSecret(character, "AVAIL_APP_ID")
                 ? availPlugin
                 : null,
             getSecret(character, "OPEN_WEATHER_API_KEY")
@@ -1221,7 +1207,7 @@ export async function createAgent(
                 ? hyperliquidPlugin
                 : null,
             getSecret(character, "AKASH_MNEMONIC") &&
-            getSecret(character, "AKASH_WALLET_ADDRESS")
+                getSecret(character, "AKASH_WALLET_ADDRESS")
                 ? akashPlugin
                 : null,
             getSecret(character, "CHAINBASE_API_KEY") ? chainbasePlugin : null,
@@ -1232,18 +1218,18 @@ export async function createAgent(
             getSecret(character, "ZERO_EX_API_KEY") ? zxPlugin : null,
             getSecret(character, "DKG_PRIVATE_KEY") ? dkgPlugin : null,
             getSecret(character, "PYTH_TESTNET_PROGRAM_KEY") ||
-            getSecret(character, "PYTH_MAINNET_PROGRAM_KEY")
+                getSecret(character, "PYTH_MAINNET_PROGRAM_KEY")
                 ? pythDataPlugin
                 : null,
             getSecret(character, "LND_TLS_CERT") &&
-            getSecret(character, "LND_MACAROON") &&
-            getSecret(character, "LND_SOCKET")
+                getSecret(character, "LND_MACAROON") &&
+                getSecret(character, "LND_SOCKET")
                 ? lightningPlugin
                 : null,
             getSecret(character, "OPENAI_API_KEY") &&
-            parseBooleanFromText(
-                getSecret(character, "ENABLE_OPEN_AI_COMMUNITY_PLUGIN")
-            )
+                parseBooleanFromText(
+                    getSecret(character, "ENABLE_OPEN_AI_COMMUNITY_PLUGIN")
+                )
                 ? openaiPlugin
                 : null,
             getSecret(character, "DEVIN_API_TOKEN") ? devinPlugin : null,
@@ -1252,17 +1238,17 @@ export async function createAgent(
                 ? holdstationPlugin
                 : null,
             getSecret(character, "NVIDIA_NIM_API_KEY") ||
-            getSecret(character, "NVIDIA_NGC_API_KEY")
+                getSecret(character, "NVIDIA_NGC_API_KEY")
                 ? nvidiaNimPlugin
                 : null,
             getSecret(character, "BNB_PRIVATE_KEY") ||
-            getSecret(character, "BNB_PUBLIC_KEY")?.startsWith("0x")
+                getSecret(character, "BNB_PUBLIC_KEY")?.startsWith("0x")
                 ? bnbPlugin
                 : null,
             (getSecret(character, "EMAIL_INCOMING_USER") &&
                 getSecret(character, "EMAIL_INCOMING_PASS")) ||
-            (getSecret(character, "EMAIL_OUTGOING_USER") &&
-                getSecret(character, "EMAIL_OUTGOING_PASS"))
+                (getSecret(character, "EMAIL_OUTGOING_USER") &&
+                    getSecret(character, "EMAIL_OUTGOING_PASS"))
                 ? emailPlugin
                 : null,
             getSecret(character, "SEI_PRIVATE_KEY") ? seiPlugin : null,
@@ -1272,11 +1258,11 @@ export async function createAgent(
             getSecret(character, "SUNO_API_KEY") ? sunoPlugin : null,
             getSecret(character, "UDIO_AUTH_TOKEN") ? udioPlugin : null,
             getSecret(character, "IMGFLIP_USERNAME") &&
-            getSecret(character, "IMGFLIP_PASSWORD")
+                getSecret(character, "IMGFLIP_PASSWORD")
                 ? imgflipPlugin
                 : null,
             getSecret(character, "FUNDING_PRIVATE_KEY") &&
-            getSecret(character, "EVM_RPC_URL")
+                getSecret(character, "EVM_RPC_URL")
                 ? litPlugin
                 : null,
             getSecret(character, "ETHSTORAGE_PRIVATE_KEY")
@@ -1286,23 +1272,23 @@ export async function createAgent(
             getSecret(character, "FORM_PRIVATE_KEY") ? formPlugin : null,
             getSecret(character, "ANKR_WALLET") ? ankrPlugin : null,
             getSecret(character, "DCAP_EVM_PRIVATE_KEY") &&
-            getSecret(character, "DCAP_MODE")
+                getSecret(character, "DCAP_MODE")
                 ? dcapPlugin
                 : null,
             getSecret(character, "QUICKINTEL_API_KEY")
                 ? quickIntelPlugin
                 : null,
-            getSecret(character, "GELATO_RELAY_API_KEY") ? gelatoPlugin : null,
+            // getSecret(character, "GELATO_RELAY_API_KEY") ? gelatoPlugin : null,
             getSecret(character, "TRIKON_WALLET_ADDRESS") ? trikonPlugin : null,
             getSecret(character, "ARBITRAGE_EVM_PRIVATE_KEY") &&
-            (getSecret(character, "ARBITRAGE_EVM_PROVIDER_URL") ||
-                getSecret(character, "ARBITRAGE_ETHEREUM_WS_URL")) &&
-            getSecret(character, "ARBITRAGE_FLASHBOTS_RELAY_SIGNING_KEY") &&
-            getSecret(character, "ARBITRAGE_BUNDLE_EXECUTOR_ADDRESS")
+                (getSecret(character, "ARBITRAGE_EVM_PROVIDER_URL") ||
+                    getSecret(character, "ARBITRAGE_ETHEREUM_WS_URL")) &&
+                getSecret(character, "ARBITRAGE_FLASHBOTS_RELAY_SIGNING_KEY") &&
+                getSecret(character, "ARBITRAGE_BUNDLE_EXECUTOR_ADDRESS")
                 ? arbitragePlugin
                 : null,
             getSecret(character, "DESK_EXCHANGE_PRIVATE_KEY") ||
-            getSecret(character, "DESK_EXCHANGE_NETWORK")
+                getSecret(character, "DESK_EXCHANGE_NETWORK")
                 ? deskExchangePlugin
                 : null,
         ]
@@ -1476,15 +1462,15 @@ const startAgents = async () => {
     let serverPort = Number.parseInt(settings.SERVER_PORT || "3000");
     const args = parseArguments();
     const charactersArg = args.characters || args.character;
-    let characters = [defaultCharacter];
+    let characters = [mainCharacter];
 
     if (process.env.IQ_WALLET_ADDRESS && process.env.IQSOlRPC) {
         characters = await loadCharacterFromOnchain();
     }
 
-    const notOnchainJson = !onchainJson || onchainJson == "null";
+    // const notOnchainJson = !onchainJson || onchainJson == "null";
 
-    if ((notOnchainJson && charactersArg) || hasValidRemoteUrls()) {
+    if ((charactersArg) || hasValidRemoteUrls()) {
         characters = await loadCharacters(charactersArg);
     }
 
@@ -1541,12 +1527,12 @@ if (
     parseBooleanFromText(process.env.PREVENT_UNHANDLED_EXIT)
 ) {
     // Handle uncaught exceptions to prevent the process from crashing
-    process.on("uncaughtException", function (err) {
+    process.on("uncaughtException", function(err) {
         console.error("uncaughtException", err);
     });
 
     // Handle unhandled rejections to prevent the process from crashing
-    process.on("unhandledRejection", function (err) {
+    process.on("unhandledRejection", function(err) {
         console.error("unhandledRejection", err);
     });
 }

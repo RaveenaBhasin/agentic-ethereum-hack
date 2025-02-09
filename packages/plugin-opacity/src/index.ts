@@ -23,15 +23,132 @@ export class OpacityAdapter implements IVerifiableInferenceAdapter {
         this.options = options;
     }
 
+
     async generateText(
         context: string,
         modelClass: string,
         options?: VerifiableInferenceOptions
     ): Promise<VerifiableInferenceResult> {
-        const provider = this.options.modelProvider || ModelProviderName.OPENAI;
+        const provider = this.options.modelProvider || ModelProviderName.ANTHROPIC;
+        const baseEndpoint = options?.endpoint;
+        const model = models[provider].model[modelClass];
+        const apiKey = this.options.token;
+
+        elizaLogger.log("Generating text with options:", {
+            modelProvider: provider,
+            model: modelClass,
+        });
+
+        let endpoint: string;
+        const requestHeaders: Record<string, string> = {
+            "Content-Type": "application/json",
+            ...options?.headers,
+        };
+
+        switch (provider) {
+            case ModelProviderName.OPENAI:
+                endpoint = `${baseEndpoint}/openai/chat/completions`;
+                requestHeaders["Authorization"] = `Bearer ${apiKey}`;
+                break;
+            case ModelProviderName.ANTHROPIC:
+                endpoint = "https://api.anthropic.com/v1/messages";
+                requestHeaders["x-api-key"] = apiKey;
+                requestHeaders["anthropic-version"] = "2023-06-01";
+                break;
+            default:
+                throw new Error(`Unsupported model provider: ${provider}`);
+        }
+
+        try {
+
+            let body: Record<string, unknown>;
+            if (provider === ModelProviderName.ANTHROPIC) {
+                body = {
+                    model: model.name,
+                    system: context, // ? Use `system` as a top-level parameter
+                    messages: [{ role: "user", content: context }], // ? OpenAI format remains unchanged
+                    temperature: model.temperature || 0.7,
+                    max_tokens: model.maxOutputTokens,
+                };
+            } else {
+                body = {
+                    model: model.name,
+                    messages: [{ role: "system", content: context }], // ? OpenAI format remains unchanged
+                    temperature: model.temperature || 0.7,
+                    max_tokens: model.maxOutputTokens,
+                };
+            }
+
+            elizaLogger.debug("Request body:", JSON.stringify(body, null, 2));
+            const requestBody = JSON.stringify(body);
+
+            elizaLogger.debug("Making request to provider with:", {
+                endpoint,
+                headers: { ...requestHeaders, "Authorization": "[REDACTED]" },
+                body: requestBody,
+            });
+
+            // Validate JSON before sending
+            try {
+                JSON.parse(requestBody);
+            } catch {
+                elizaLogger.error("Invalid JSON body:", body);
+                throw new Error("Failed to create valid JSON request body");
+            }
+
+            const response = await fetch(endpoint, {
+                method: "POST",
+                headers: requestHeaders,
+                body: requestBody,
+            });
+            console.log("Response", response);
+            console.log("stringify Response", JSON.stringify(response));
+
+            if (!response.ok) {
+                const errorText = await response.text();
+                elizaLogger.error("API error response:", {
+                    status: response.status,
+                    statusText: response.statusText,
+                    error: errorText,
+                });
+                throw new Error(`API request failed: ${errorText}`);
+            }
+
+            elizaLogger.debug("API response:", {
+                status: response.status,
+                statusText: response.statusText,
+                headers: response.headers,
+                type: response.type,
+                url: response.url,
+            });
+
+            const responseJson = await response.json();
+            elizaLogger.info(responseJson);
+            const text = responseJson.choices?.[0]?.message?.content ?? "";
+            elizaLogger.info("printing log id");
+            elizaLogger.info(response.headers.get("cf-aig-log-id"));
+            return {
+                text,
+                id: response.headers.get("cf-aig-log-id") || "",
+                provider: VerifiableInferenceProvider.OPACITY,
+                timestamp: Date.now(),
+                proof: await this.generateProof(this.options.opacityProverUrl, response.headers.get("cf-aig-log-id")),
+            };
+        } catch (error) {
+            console.error("Error in Opacity generateText:", error);
+            throw error;
+        }
+    }
+
+    async generateTextY(
+        context: string,
+        modelClass: string,
+        options?: VerifiableInferenceOptions
+    ): Promise<VerifiableInferenceResult> {
+        const provider = this.options.modelProvider || ModelProviderName.ANTHROPIC;
         const baseEndpoint =
-            options?.endpoint ||
-            `https://gateway.ai.cloudflare.com/v1/${this.options.teamId}/${this.options.teamName}`;
+            options?.endpoint;
+        // `https://gateway.ai.cloudflare.com/v1/${this.options.teamId}/${this.options.teamName}`;
         const model = models[provider].model[modelClass];
         const apiKey = this.options.token;
 
@@ -43,14 +160,24 @@ export class OpacityAdapter implements IVerifiableInferenceAdapter {
         // Get provider-specific endpoint
         let endpoint: string;
         let authHeader: string;
+        const requestHeaders: Record<string, string> = {
+            "Content-Type": "application/json",
+            ...options?.headers
+        };
+        const apiKeyA = "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";
 
         switch (provider) {
             case ModelProviderName.OPENAI:
                 endpoint = `${baseEndpoint}/openai/chat/completions`;
                 authHeader = `Bearer ${apiKey}`;
                 break;
+            case ModelProviderName.ANTHROPIC:
+                endpoint = `https://api.anthropic.com/v1/messages`;
+                // authHeader = `Bearer ${apiKeyA} `;
+                requestHeaders["x-api-key"] = apiKeyA;
+                break;
             default:
-                throw new Error(`Unsupported model provider: ${provider}`);
+                throw new Error(`Unsupported model provider: ${provider} `);
         }
 
         try {
@@ -72,8 +199,23 @@ export class OpacityAdapter implements IVerifiableInferenceAdapter {
                         presence_penalty: model.presence_penalty,
                     };
                     break;
+                case ModelProviderName.ANTHROPIC:
+                    body = {
+                        model: model.name,
+                        messages: [
+                            {
+                                role: "system",
+                                content: context
+                            }
+                        ],
+                        temperature: model.temperature || 0.7,
+                        max_tokens: model.maxOutputTokens,
+                        frequency_penalty: model.frequency_penalty,
+                        presence_penalty: model.presence_penalty,
+                    };
+                    break;
                 default:
-                    throw new Error(`Unsupported model provider: ${provider}`);
+                    throw new Error(`Unsupported model provider: ${provider} `);
             }
 
             elizaLogger.debug("Request body:", JSON.stringify(body, null, 2));
@@ -114,7 +256,7 @@ export class OpacityAdapter implements IVerifiableInferenceAdapter {
                     statusText: cloudflareResponse.statusText,
                     error: errorText,
                 });
-                throw new Error(`Cloudflare request failed: ${errorText}`);
+                throw new Error(`Cloudflare request failed: ${errorText} `);
             }
 
             elizaLogger.debug("Cloudflare response:", {
@@ -158,14 +300,14 @@ export class OpacityAdapter implements IVerifiableInferenceAdapter {
         const response = await fetch(`${baseUrl}/api/logs/${logId}`);
         elizaLogger.debug("Fetching proof for log ID:", logId);
         if (!response.ok) {
-            throw new Error(`Failed to fetch proof: ${response.statusText}`);
+            throw new Error(`Failed to fetch proof: ${response.statusText} `);
         }
         return await response.json();
     }
 
     async verifyProof(result: VerifiableInferenceResult): Promise<boolean> {
         const isValid = await verifyProof(
-            `${this.options.opacityProverUrl}`,
+            `${this.options.opacityProverUrl} `,
             result.id,
             result.proof
         );
