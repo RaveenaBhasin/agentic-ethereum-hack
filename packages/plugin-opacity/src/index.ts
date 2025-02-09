@@ -147,8 +147,7 @@ export class OpacityAdapter implements IVerifiableInferenceAdapter {
     ): Promise<VerifiableInferenceResult> {
         const provider = this.options.modelProvider || ModelProviderName.ANTHROPIC;
         const baseEndpoint =
-            options?.endpoint;
-        // `https://gateway.ai.cloudflare.com/v1/${this.options.teamId}/${this.options.teamName}`;
+            options?.endpoint || `https://gateway.ai.cloudflare.com/v1/${this.options.teamId}/${this.options.teamName}`;
         const model = models[provider].model[modelClass];
         const apiKey = this.options.token;
 
@@ -164,17 +163,11 @@ export class OpacityAdapter implements IVerifiableInferenceAdapter {
             "Content-Type": "application/json",
             ...options?.headers
         };
-        const apiKeyA = "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";
 
         switch (provider) {
             case ModelProviderName.OPENAI:
                 endpoint = `${baseEndpoint}/openai/chat/completions`;
                 authHeader = `Bearer ${apiKey}`;
-                break;
-            case ModelProviderName.ANTHROPIC:
-                endpoint = `https://api.anthropic.com/v1/messages`;
-                // authHeader = `Bearer ${apiKeyA} `;
-                requestHeaders["x-api-key"] = apiKeyA;
                 break;
             default:
                 throw new Error(`Unsupported model provider: ${provider} `);
@@ -192,21 +185,6 @@ export class OpacityAdapter implements IVerifiableInferenceAdapter {
                                 role: "system",
                                 content: context,
                             },
-                        ],
-                        temperature: model.temperature || 0.7,
-                        max_tokens: model.maxOutputTokens,
-                        frequency_penalty: model.frequency_penalty,
-                        presence_penalty: model.presence_penalty,
-                    };
-                    break;
-                case ModelProviderName.ANTHROPIC:
-                    body = {
-                        model: model.name,
-                        messages: [
-                            {
-                                role: "system",
-                                content: context
-                            }
                         ],
                         temperature: model.temperature || 0.7,
                         max_tokens: model.maxOutputTokens,
