@@ -15,7 +15,7 @@ import { ethers } from "ethers";
 import { handleLendingApr, handleBorrowApr } from "./utils.ts";
 import { AAVE_V3_POOL_ABI } from "./aaveAbi.ts";
 import { getRpcUrlFromChainId } from "./chains.ts";
-import { OpacityAdapter } from "../../../plugin-opacity/src/index.ts";
+// import { OpacityAdapter } from "../../../plugin-opacity/src/index.ts";
 
 const NETWORK_CONFIG = {
     ethereum: {
@@ -58,11 +58,16 @@ export const aaveProtocolAction = {
             template: aaveTemplate,
         });
 
-        let proverUrl = runtime.getSetting("OPACITY_PROVER_URL");
-        let token = runtime.getSetting("ANTHROPIC_API_KEY");
-        const opacityAdapter = new OpacityAdapter({ modelProvider: ModelProviderName.ANTHROPIC, opacityProverUrl: proverUrl as string, token: token });
-        const text = opacityAdapter.generateText(context, "small", { endpoint: "https://api.anthropic.com" as string });
-        console.log("text", text);
+        // let proverUrl = runtime.getSetting("OPACITY_PROVER_URL");
+        // let token = runtime.getSetting("ANTHROPIC_API_KEY");
+        // const opacityAdapter = new OpacityAdapter({ modelProvider: ModelProviderName.OPENAI, opacityProverUrl: proverUrl as string, token: token });
+        // const text = opacityAdapter.generateText(context, "small", { endpoint: "https://api.anthropic.com" as string });
+        // const result = await opacityAdapter.generateText(context, "gpt-4o-mini");
+        // console.log("text", result.text);
+        // console.log("Proof:", result.proof);
+
+        // const isValid = await opacityAdapter.verifyProof(result);
+        // console.log("Proof is valid:", isValid);
 
         const content = await generateObjectDeprecated({
             runtime,
@@ -85,7 +90,7 @@ export const aaveProtocolAction = {
             const networkConfig = NETWORK_CONFIG[network.toLowerCase()];
             console.log("Network config", networkConfig);
             if (!networkConfig) {
-                throw new Error(`Unsupported network: ${network}`);
+                throw new Error(`Unsupported network: ${network} `);
             }
 
             let rpc = getRpcUrlFromChainId(networkConfig.chainId);
@@ -108,7 +113,7 @@ export const aaveProtocolAction = {
                     console.log("Response", responseMessage);
                     break;
                 default:
-                    throw new Error(`Unsupported action type: ${actionType}`);
+                    throw new Error(`Unsupported action type: ${actionType} `);
             }
 
             callback?.({
@@ -118,8 +123,8 @@ export const aaveProtocolAction = {
             return true;
 
         } catch (error) {
-            elizaLogger.log(`Error during executing swap: ${error.message}`);
-            callback?.({ text: `Error during swap:  ${error.message}` });
+            elizaLogger.log(`Error during executing swap: ${error.message} `);
+            callback?.({ text: `Error during swap:  ${error.message} ` });
             return false;
         }
         return true;

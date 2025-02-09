@@ -23,14 +23,14 @@ export class OpacityAdapter implements IVerifiableInferenceAdapter {
         this.options = options;
     }
 
-
-    async generateText(
+    //Support anthropic
+    async generateTextY(
         context: string,
         modelClass: string,
         options?: VerifiableInferenceOptions
     ): Promise<VerifiableInferenceResult> {
         const provider = this.options.modelProvider || ModelProviderName.ANTHROPIC;
-        const baseEndpoint = options?.endpoint;
+        const baseEndpoint = options?.endpoint || `https://gateway.ai.cloudflare.com/v1/${this.options.teamId}/${this.options.teamName}`;
         const model = models[provider].model[modelClass];
         const apiKey = this.options.token;
 
@@ -51,14 +51,14 @@ export class OpacityAdapter implements IVerifiableInferenceAdapter {
                 requestHeaders["Authorization"] = `Bearer ${apiKey}`;
                 break;
             case ModelProviderName.ANTHROPIC:
-                endpoint = "https://api.anthropic.com/v1/messages";
+                endpoint = `${baseEndpoint}/anthropic/v1/messages`;
                 requestHeaders["x-api-key"] = apiKey;
                 requestHeaders["anthropic-version"] = "2023-06-01";
                 break;
             default:
                 throw new Error(`Unsupported model provider: ${provider}`);
         }
-
+        console.log("Endpoint", endpoint);
         try {
 
             let body: Record<string, unknown>;
@@ -140,12 +140,12 @@ export class OpacityAdapter implements IVerifiableInferenceAdapter {
         }
     }
 
-    async generateTextY(
+    async generateText(
         context: string,
         modelClass: string,
         options?: VerifiableInferenceOptions
     ): Promise<VerifiableInferenceResult> {
-        const provider = this.options.modelProvider || ModelProviderName.ANTHROPIC;
+        const provider = this.options.modelProvider || ModelProviderName.OPENAI || ModelProviderName.ANTHROPIC;
         const baseEndpoint =
             options?.endpoint || `https://gateway.ai.cloudflare.com/v1/${this.options.teamId}/${this.options.teamName}`;
         const model = models[provider].model[modelClass];
@@ -276,7 +276,7 @@ export class OpacityAdapter implements IVerifiableInferenceAdapter {
 
     async generateProof(baseUrl: string, logId: string) {
         const response = await fetch(`${baseUrl}/api/logs/${logId}`);
-        elizaLogger.debug("Fetching proof for log ID:", logId);
+        elizaLogger.info("Fetching proof for log ID:", logId);
         if (!response.ok) {
             throw new Error(`Failed to fetch proof: ${response.statusText} `);
         }
@@ -285,7 +285,7 @@ export class OpacityAdapter implements IVerifiableInferenceAdapter {
 
     async verifyProof(result: VerifiableInferenceResult): Promise<boolean> {
         const isValid = await verifyProof(
-            `${this.options.opacityProverUrl} `,
+            `${this.options.opacityProverUrl}`,
             result.id,
             result.proof
         );
