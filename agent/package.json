@@ -146,6 +146,7 @@
         "@elizaos/plugin-zilliqa": "workspace:*",
         "@elizaos/client-deva": "workspace:*",
         "@elizaos/plugin-arbitrage": "workspace:*",
+        "@elizaos/plugin-eigenda": "workspace:*",
         "@elizaos/plugin-multiversx": "workspace:*",
         "@elizaos/plugin-near": "workspace:*",
         "@elizaos/plugin-stargaze": "workspace:*",

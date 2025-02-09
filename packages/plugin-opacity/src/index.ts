@@ -8,19 +8,59 @@ import {
     elizaLogger,
 } from "@elizaos/core";
 import { verifyProof } from "./utils/api";
+import { EigenDAClient } from "@elizaos/plugin-eigenda";
+
 interface OpacityOptions {
     modelProvider?: ModelProviderName;
     token?: string;
     teamId?: string;
     teamName?: string;
     opacityProverUrl: string;
+    // EigenDA options
+    eigenDAPrivateKey?: string;
+    eigenDAApiUrl?: string;
+    eigenDARpcUrl?: string;
+    eigenDACreditsContractAddress?: string;
 }
 
 export class OpacityAdapter implements IVerifiableInferenceAdapter {
     public options: OpacityOptions;
+    private eigenDAClient: InstanceType<typeof EigenDAClient>;
+    private eigenDAIdentifier: Uint8Array;
 
     constructor(options: OpacityOptions) {
         this.options = options;
+
+        // Initialize EigenDA client if private key is provided
+        if (options.eigenDAPrivateKey) {
+            this.eigenDAClient = new EigenDAClient({
+                privateKey: options.eigenDAPrivateKey,
+                apiUrl: options.eigenDAApiUrl,
+                rpcUrl: options.eigenDARpcUrl,
+                creditsContractAddress: options.eigenDACreditsContractAddress
+            });
+        }
+    }
+
+    private async initializeEigenDA() {
+        if (!this.eigenDAClient) {
+            throw new Error("EigenDA client not initialized - missing private key");
+        }
+
+        if (!this.eigenDAIdentifier) {
+            // Get or create identifier
+            const identifiers = await this.eigenDAClient.getIdentifiers();
+            this.eigenDAIdentifier = identifiers.length > 0
+                ? identifiers[0]
+                : await this.eigenDAClient.createIdentifier();
+
+            // Check balance and top up if needed
+            const balance = await this.eigenDAClient.getBalance(this.eigenDAIdentifier);
+            if (balance < 0.001) {
+                elizaLogger.log("EigenDA balance low, topping up with 0.01 ETH...");
+                await this.eigenDAClient.topupCredits(this.eigenDAIdentifier, 0.01);
+            }
+        }
     }
 
     //Support anthropic
@@ -253,6 +293,7 @@ export class OpacityAdapter implements IVerifiableInferenceAdapter {
                 this.options.opacityProverUrl,
                 cloudflareLogId
             );
+
             elizaLogger.debug(
                 "Proof generated for text generation ID:",
                 cloudflareLogId
@@ -280,7 +321,36 @@ export class OpacityAdapter implements IVerifiableInferenceAdapter {
         if (!response.ok) {
             throw new Error(`Failed to fetch proof: ${response.statusText} `);
         }
-        return await response.json();
+        const proof = await response.json();
+
+        // Store proof in EigenDA if client is initialized
+        if (this.eigenDAClient) {
+            try {
+                await this.initializeEigenDA();
+
+                // Store proof with metadata
+                const proofData = JSON.stringify({
+                    proof,
+                    logId,
+                    timestamp: Date.now()
+                });
+
+                const uploadResult = await this.eigenDAClient.upload(proofData, this.eigenDAIdentifier);
+                elizaLogger.debug("Proof stored in EigenDA with job ID:", uploadResult.job_id);
+
+                // Return proof with EigenDA reference
+                return {
+                    ...proof,
+                    eigenDAJobId: uploadResult.job_id
+                };
+            } catch (error) {
+                elizaLogger.error("Failed to store proof in EigenDA:", error);
+                // Return original proof if EigenDA storage fails
+                return proof;
+            }
+        }
+
+        return proof;
     }
 
     async verifyProof(result: VerifiableInferenceResult): Promise<boolean> {
@@ -289,7 +359,7 @@ export class OpacityAdapter implements IVerifiableInferenceAdapter {
             result.id,
             result.proof
         );
-        console.log("Proof is valid:", isValid.success);
+        elizaLogger.log("Proof verified:", isValid.success);
         if (!isValid.success) {
             throw new Error("Proof is invalid");
         }

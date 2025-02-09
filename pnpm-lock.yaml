@@ -290,6 +290,9 @@ importers:
       '@elizaos/plugin-echochambers':
         specifier: workspace:*
         version: link:../packages/plugin-echochambers
+      '@elizaos/plugin-eigenda':
+        specifier: workspace:*
+        version: link:../packages/plugin-eigenda
       '@elizaos/plugin-edwin':
         specifier: workspace:*
         version: link:../packages/plugin-edwin
@@ -2077,6 +2080,9 @@ importers:
         specifier: 8.3.5
         version: 8.3.5(@swc/core@1.10.14)(jiti@2.4.2)(postcss@8.5.1)(tsx@4.19.2)(typescript@5.7.3)(yaml@2.7.0)
       vitest:
+        specifier: ^1.2.1
+        version: 1.2.1(@types/node@22.12.0)(jsdom@25.0.1(bufferutil@4.0.9)(canvas@2.11.2(encoding@0.1.13))(utf-8-validate@6.0.5))(terser@5.37.0)
+      vitest:
         specifier: ^3.0.0
         version: 3.0.5(@types/debug@4.1.12)(@types/node@22.13.1)(jsdom@25.0.1(bufferutil@4.0.9)(utf-8-validate@6.0.5))(terser@5.38.0)
 
@@ -2703,6 +2709,62 @@ importers:
       tsup:
         specifier: 8.3.5
         version: 8.3.5(@swc/core@1.10.14)(jiti@2.4.2)(postcss@8.5.1)(tsx@4.19.2)(typescript@5.7.3)(yaml@2.7.0)
+
+  packages/plugin-eigenda:
+    dependencies:
+      '@elizaos/core':
+        specifier: workspace:*
+        version: link:../core
+      axios:
+        specifier: ^1.6.7
+        version: 1.7.9
+      ethers:
+        specifier: ^6.11.1
+        version: 6.13.4(bufferutil@4.0.9)(utf-8-validate@6.0.5)
+      zod:
+        specifier: ^3.22.4
+        version: 3.23.8
+    devDependencies:
+      '@types/node':
+        specifier: ^20.11.19
+        version: 20.17.9
+      rimraf:
+        specifier: ^5.0.5
+        version: 5.0.10
+      tsup:
+        specifier: ^8.0.2
+        version: 8.3.5(@swc/core@1.10.11(@swc/helpers@0.5.15))(jiti@2.4.2)(postcss@8.5.1)(tsx@4.19.2)(typescript@5.6.3)(yaml@2.7.0)
+      typescript:
+        specifier: ^5.3.3
+        version: 5.6.3
+
+  packages/plugin-eigenda:
+    dependencies:
+      '@elizaos/core':
+        specifier: workspace:*
+        version: link:../core
+      axios:
+        specifier: ^1.6.7
+        version: 1.7.9
+      ethers:
+        specifier: ^6.11.1
+        version: 6.13.4(bufferutil@4.0.9)(utf-8-validate@6.0.5)
+      zod:
+        specifier: ^3.22.4
+        version: 3.23.8
+    devDependencies:
+      '@types/node':
+        specifier: ^20.11.19
+        version: 20.17.9
+      rimraf:
+        specifier: ^5.0.5
+        version: 5.0.10
+      tsup:
+        specifier: ^8.0.2
+        version: 8.3.5(@swc/core@1.10.11(@swc/helpers@0.5.15))(jiti@2.4.2)(postcss@8.5.1)(tsx@4.19.2)(typescript@5.6.3)(yaml@2.7.0)
+      typescript:
+        specifier: ^5.3.3
+        version: 5.6.3
 
   packages/plugin-email:
     dependencies:
@@ -4028,6 +4090,9 @@ importers:
       '@elizaos/core':
         specifier: workspace:*
         version: link:../core
+      '@elizaos/plugin-eigenda':
+        specifier: workspace:*
+        version: link:../plugin-eigenda
       dotenv:
         specifier: ^16.4.5
         version: 16.4.7

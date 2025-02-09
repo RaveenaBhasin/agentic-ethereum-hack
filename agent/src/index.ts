@@ -137,6 +137,13 @@ import { holdstationPlugin } from "@elizaos/plugin-holdstation";
 import { nvidiaNimPlugin } from "@elizaos/plugin-nvidia-nim";
 import { zxPlugin } from "@elizaos/plugin-0x";
 import { hyperbolicPlugin } from "@elizaos/plugin-hyperbolic";
+import { litPlugin } from "@elizaos/plugin-lit";
+import { OpacityAdapter } from "@elizaos/plugin-opacity";
+import { openWeatherPlugin } from "@elizaos/plugin-open-weather";
+import { stargazePlugin } from "@elizaos/plugin-stargaze";
+import { akashPlugin } from "@elizaos/plugin-akash";
+import { quaiPlugin } from "@elizaos/plugin-quai";
+import { eigendaPlugin } from "@elizaos/plugin-eigenda";
 import Database from "better-sqlite3";
 import fs from "fs";
 import net from "net";
@@ -903,6 +910,18 @@ export async function initializeClients(
 }
 
 function getSecret(character: Character, secret: string) {
+    // Special handling for EigenDA secrets
+    if (secret === "EIGENDA_PRIVATE_KEY") {
+        return character.settings?.secrets?.EIGENDA_PRIVATE_KEY ||
+               character.settings?.secrets?.EVM_PRIVATE_KEY ||
+               process.env.EIGENDA_PRIVATE_KEY ||
+               process.env.EVM_PRIVATE_KEY;
+    }
+    if (secret === "BASE_RPC_URL") {
+        return character.settings?.secrets?.BASE_RPC_URL ||
+               process.env.BASE_RPC_URL ||
+               "https://base.drpc.org";
+    }
     return character.settings?.secrets?.[secret] || process.env[secret];
 }
 
@@ -973,6 +992,7 @@ export async function createAgent(
             opacityProverUrl: process.env.OPACITY_PROVER_URL,
             modelProvider: character.modelProvider,
             token: token,
+            eigenDAPrivateKey: process.env.EIGENDA_PRIVATE_KEY,
         });
         elizaLogger.log("Verifiable inference adapter initialized");
         elizaLogger.log("teamId", process.env.OPACITY_TEAM_ID);
@@ -1286,6 +1306,10 @@ export async function createAgent(
                 getSecret(character, "ARBITRAGE_FLASHBOTS_RELAY_SIGNING_KEY") &&
                 getSecret(character, "ARBITRAGE_BUNDLE_EXECUTOR_ADDRESS")
                 ? arbitragePlugin
+                : null,
+            getSecret(character, "EIGENDA_PRIVATE_KEY") &&
+            getSecret(character, "BASE_RPC_URL")
+                ? eigendaPlugin
                 : null,
             getSecret(character, "DESK_EXCHANGE_PRIVATE_KEY") ||
                 getSecret(character, "DESK_EXCHANGE_NETWORK")
